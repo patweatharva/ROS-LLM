@@ -106,7 +106,6 @@ class AudioInput:
 def main():
 
     try:
-        rospy.init_node('audio_input', anonymous=True)
         audio_input = AudioInput()
         rospy.spin()
     except KeyboardInterrupt:
