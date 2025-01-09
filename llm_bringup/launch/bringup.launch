@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- Launch the Tiago Dual simulation in a Gazebo world -->
+    
+    <!-- Arguments -->
+    <arg name="public_sim" default="true" />
+    <arg name="lost" default="false" />
+    <arg name="map" default="$(env HOME)/.pal/tiago_dual_maps/configurations/small_house" />
+    <arg name="world" default="small_house" />
+    <arg name="gzpose" default="-x 1.0  -y   0.0 -z  0.0   -R 0.0 -P 0.0 -Y  0.0"/>
+
+    <!-- Include the Tiago Dual Gazebo world launch -->
+    <include file="$(find tiago_dual_2dnav_gazebo)/launch/tiago_dual_navigation.launch">
+        <arg name="public_sim" value="$(arg public_sim)" />
+        <arg name="lost" value="$(arg lost)" />
+        <arg name="map" value="$(arg map)" />
+        <arg name="world" value="$(arg world)" />
+        <arg name="gzpose" value="$(arg gzpose)" />
+    </include>
+
+</launch>
