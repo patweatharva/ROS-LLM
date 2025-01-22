@@ -101,6 +101,7 @@ class LLMNode:
         except Exception as e:
             rospy.logerr(f"Error calling Ollama API: {e}")
             return None
+        
     def get_response_information(self, llm_response):
         if llm_response is None:
             return None, "Sorry, I encountered an error while processing your request.", None, 0
