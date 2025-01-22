@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Open Whisper related
+from datetime import datetime
 import whisper
+import rospkg
+import os
 
 # Audio recording related
 import sounddevice as sd
@@ -23,8 +26,30 @@ class AudioInput:
         rospy.init_node("llm_audio_input", anonymous=True)
 
         # tmp audio file
-        self.tmp_audio_file = "/tmp/user_audio_input.flac"
-
+        self.audio_file = "/tmp/user_audio_input.flac"
+        
+        # Get package path and create directories for model and audio files
+        rospack = rospkg.RosPack()
+        self.package_path = rospack.get_path("llm_input")
+        
+        # Create model and audio directories
+        self.model_dir = os.path.join(self.package_path, "models")
+        self.audio_dir = os.path.join(self.package_path, "audio")
+        if not os.path.exists(self.model_dir):
+            os.makedirs(self.model_dir, exist_ok=True)
+        if not os.path.exists(self.audio_dir):
+            os.makedirs(self.audio_dir, exist_ok=True)
+            
+        self.duration = config.duration  # Audio recording duration, in seconds
+        self.sample_rate = config.sample_rate  # Sample rate
+        self.volume_gain_multiplier = config.volume_gain_multiplier  # Volume gain multiplier
+        self.model_device = config.model_device
+        self.whisper_model = whisper.load_model(config.whisper_model_size, 
+                                                device=self.model_device, 
+                                                in_memory=True, 
+                                                download_root=self.model_dir)
+        
+            
         # Initialization publisher
         self.initialization_publisher = rospy.Publisher(
             "/llm_initialization_state", String, queue_size=10
@@ -52,41 +77,43 @@ class AudioInput:
             self.action_function_listening()
 
     def action_function_listening(self):
-        # Recording settings
-        duration = config.duration  # Audio recording duration, in seconds
-        sample_rate = config.sample_rate  # Sample rate
-        volume_gain_multiplier = config.volume_gain_multiplier  # Volume gain multiplier
-
+        # Get current time
+        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        # Create audio file name (using WAV instead of FLAC/MP3)
+        audio_file_name = f"user_audio_input_{current_time}.wav"
+        self.audio_file = os.path.join(self.audio_dir, audio_file_name)
+        
         # Step 1: Record audio
         rospy.loginfo("Start local recording...")
         audio_data = sd.rec(
-            int(duration * sample_rate), samplerate=sample_rate, channels=1
+            int(self.duration * self.sample_rate), samplerate=self.sample_rate, channels=1
         )
         sd.wait()  # Wait until recording is finished
 
         # Step 2: Increase the volume by a multiplier
-        audio_data *= volume_gain_multiplier
+        audio_data *= self.volume_gain_multiplier
 
-        # Step 3: Save audio to file
-        write(self.tmp_audio_file, sample_rate, audio_data)
+        # Step 3: Save audio to WAV file only
+        write(self.audio_file, self.sample_rate, audio_data)
         rospy.loginfo("Stop local recording!")
-
+        
         # action_function_input_processing
         self.publish_string("input_processing", self.llm_state_publisher)
-
-        # Step 4: Process audio with OpenAI Whisper
-        whisper_model = whisper.load_model(config.whisper_model_size)
-
+        
         # Step 6: Wait until the conversion is complete
         rospy.loginfo("Local Converting...")
 
         # Step 7: Get the transcribed text
-        whisper_result = whisper_model.transcribe(self.tmp_audio_file, language=config.whisper_language)
-
+        whisper_result = self.whisper_model.transcribe(
+            self.audio_file,
+            language=config.whisper_language,
+            temperature=config.whisper_temperature,
+            initial_prompt=config.initial_prompt,
+            condition_on_previous_text=True
+        )
         transcript_text = whisper_result["text"]
         rospy.loginfo("Audio to text conversion complete!")
 
-        # Step 8: Publish the transcribed text to ROS
         if transcript_text == "":  # Empty input
             rospy.loginfo("Empty input!")
             self.publish_string("listening", self.llm_state_publisher)
@@ -104,7 +131,6 @@ class AudioInput:
 
 
 def main():
-
     try:
         audio_input = AudioInput()
         rospy.spin()

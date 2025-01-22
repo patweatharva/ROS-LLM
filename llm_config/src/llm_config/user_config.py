@@ -95,34 +95,30 @@ class UserConfig:
         self.robot_behavior = RobotBehavior()
         # [optional]: The robot functions list
         self.robot_functions_list = self.robot_behavior.robot_functions_list
-        # [optional]: Multi-robot list
-        # "" is for robot without name
-        self.multi_robots_name=["turtle1","turtle2","minipupper",""]
-        
-        # AWS related
-        # [required]: AWS IAM access key id
-        self.aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-        # [required]: AWS IAM secret access key
-        self.aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        # [required]: AWS IAM region name
-        self.aws_region_name = 'ap-southeast-1'
-        # [required]: AWS S3 bucket name
-        self.bucket_name = 'auromixbucket'
-        # [optional]: AWS transcription language, change this to 'zh-CN' for Chinese
-        self.aws_transcription_language = "en-US"
-        # [optional]: AWS polly voice id, change this to 'Zhiyu' for Chinese
-        self.aws_voice_id = "Ivy"
+
+    
 
         # OpenAI Whisper Model size related
         # [optional]: OpenAI Whisper Model size: tiny base small medium large
-        self.whisper_model_size = "medium"
+        self.whisper_model_size = "small.en"
         # [optional]: OpenAI Whisper Model language: en
         self.whisper_language="en"
         # Audio recording related
         # [optional]: Audio recording duration, in seconds
-        self.duration = 5
+        self.duration = 10
         # [optional]: Audio recording sample rate, in Hz
         self.sample_rate = 16000
         # [optional]: Audio recording gain multiplier
         # Change this to increase or decrease the volume
         self.volume_gain_multiplier = 1
+        # [optional]: Audio recording device name
+        self.audio_device_name = "default"
+        # [optional]: Audio recording device index
+        self.audio_device_index = 0
+        # [optional]: Whisper model device: cpu or cuda
+        self.model_device = "cuda:0"
+        # self.model_device = "cpu"
+        # [optional]: Whisper model temperature
+        self.whisper_temperature = 0.0
+        # [optional]: Initial prompt
+        self.initial_prompt = "You are a helpful assistant robot which has the ability to move around the house and help the user with their needs. The user has enabled the voice assistant feature and is speaking to the robot to ask for help with something. The user is speaking in English and your task is to understand the user's request and convert it to text."
