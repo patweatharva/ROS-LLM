@@ -5,7 +5,7 @@ import tf
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose, PoseStamped
 from geometry_msgs.msg import Twist
-from llm_interfaces.srv import ChatGPT
+from llm_interfaces.srv import ChatGPTs
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from actionlib import SimpleActionClient, GoalStatus
 

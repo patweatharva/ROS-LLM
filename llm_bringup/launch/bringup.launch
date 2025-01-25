@@ -10,7 +10,7 @@
     <arg name="gzpose" default="-x 1.0  -y   0.0 -z  0.0   -R 0.0 -P 0.0 -Y  0.0"/>
 
     <!-- Include the Tiago Dual Gazebo world launch -->
-    <include file="$(find tiago_dual_2dnav_gazebo)/launch/tiago_dual_navigation.launch">
+    <include file="$(find tiago_2dnav_gazebo)/launch/tiago_navigation.launch">
         <arg name="public_sim" value="$(arg public_sim)" />
         <arg name="lost" value="$(arg lost)" />
         <arg name="map" value="$(arg map)" />
@@ -21,7 +21,7 @@
     <node pkg="llm_input" name="llm_audio_input" type="llm_audio_input_local.py" />
     <node pkg="llm_output" type="llm_audio_output_local.py" name="llm_audio_output"/>
     <node pkg="llm_robot" type="tiago.py" name="tiago"/>
-    <!-- <node pkg="llm_model" type="llm_node.py" name="llm_node"/> -->
+    <node pkg="llm_model" type="llm_node.py" name="llm_node"/>
 
 
 </launch>

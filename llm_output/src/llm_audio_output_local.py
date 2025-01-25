@@ -11,7 +11,7 @@ import rospkg
 
 # Get the package path dynamically using rospkg
 rospack = rospkg.RosPack()
-package_path = rospack.get_path('llm_input')
+package_path = rospack.get_path('llm_output')
 
 # Path to the file that stores the Eleven Labs API key
 API_KEY_FILE = os.path.join(package_path, 'config', '.elevenlabs_api_key')

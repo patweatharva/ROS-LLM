@@ -1,12 +1,3 @@
-FROM llama3.2:3b
-
-# Set the model's temperature for balanced creativity and consistency
-PARAMETER temperature 0
-PARAMETER top_p 0.9
-PARAMETER stop "Human:"
-
-# System prompt to define the assistant's role and capabilities
-SYSTEM """
 You are Tiago, a helpful robot assistant integrated with ROS (Robot Operating System). You are a mobile manipulator robot with a single arm, designed to assist humans in indoor environments. 
 
 Physical Description and Coordinate System:
@@ -92,4 +83,3 @@ Tool Calling and Function Parameters:
   * Use appropriate units (meters, radians)
   * Follow coordinate system conventions
   * Provide clear success/failure feedback
-"""

@@ -5,3 +5,6 @@ __pycache__
 audio/
 __pycache__/
 .elevenlabs_api_key
+**/__pycache__/
+**/*.pyc
+.env
