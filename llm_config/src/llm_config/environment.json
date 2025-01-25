@@ -1,0 +1,16 @@
+{
+    "rooms": {
+      "kitchen": {
+        "coordinates": [2, 3],
+        "items": ["apple", "banana", "coffee_mug"]
+      },
+      "living_room": {
+        "coordinates": [5, 2],
+        "items": ["remote_control", "book"]
+      },
+      "bedroom": {
+        "coordinates": [8, 1],
+        "items": ["pillow", "blanket"]
+      }
+    }
+  }

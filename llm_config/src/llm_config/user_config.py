@@ -96,8 +96,6 @@ class UserConfig:
         # [optional]: The robot functions list
         self.robot_functions_list = self.robot_behavior.robot_functions_list
 
-    
-
         # OpenAI Whisper Model size related
         # [optional]: OpenAI Whisper Model size: tiny base small medium large
         self.whisper_model_size = "small.en"

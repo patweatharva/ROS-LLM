@@ -25,6 +25,7 @@ pip install sounddevice
 pip install pydub
 pip install scipy
 pip install numpy sounddevice cffi soundfile
+pip install python-dotenv
 
 echo "Installing Ollama..."
 if ! command -v ollama &> /dev/null; then
