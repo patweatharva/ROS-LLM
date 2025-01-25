@@ -6,9 +6,14 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Pose, PoseStamped
 from geometry_msgs.msg import Twist
 from llm_interfaces.srv import ChatGPT
+from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
+from actionlib import SimpleActionClient, GoalStatus
 
 # Global Initialization
 from llm_config.user_config import UserConfig
+
+def get_status_string(status_code):
+    return GoalStatus.to_string(status_code)
 
 config = UserConfig()
 
@@ -16,6 +21,10 @@ class TiagoRobot:
     def __init__(self):
         self.cmd_vel_pub = rospy.Publisher("/mobile_base_controller/cmd_vel", Twist, queue_size=10)
         self.go_to_point = rospy.Publisher("/move_base_simple/goal", PoseStamped, queue_size=10)
+        self.client = SimpleActionClient('/play_motion', PlayMotionAction)
+        rospy.loginfo("Waiting for Action Server...")
+        self.client.wait_for_server()
+
 
     def plan(self, **kwargs):
         pass
@@ -73,6 +82,37 @@ class TiagoRobot:
         self.go_to_point.publish(pose)
         rospy.loginfo(f"Publishing goal pose: {pose}")
         return pose
+    
+    def provide_answer(self, **kwargs):
+        """
+        Provides answers and responses to the user\'s queries.
+        """
+        pass
+
+
+    def motion(self, **kwargs):
+        """
+        Plays predefined motions
+        """
+
+        goal = PlayMotionGoal()
+        goal.motion_name = kwargs.get("name", "home")
+        goal.skip_planning = False
+        goal.priority = 0  # Optional
+
+        rospy.loginfo("Sending goal with motion: " + goal.motion_name)
+        self.client.send_goal(goal)
+
+        rospy.loginfo("Waiting for result...")
+        action_ok = self.client.wait_for_result(rospy.Duration(30.0))
+
+        state = self.client.get_state()
+
+        if action_ok:
+            rospy.loginfo("Action finished succesfully with state: " + str(get_status_string(state)))
+        else:
+            rospy.logwarn("Action failed with state: " + str(get_status_string(state)))
+    
 
 
 if __name__ == "__main__":

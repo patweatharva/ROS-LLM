@@ -80,7 +80,7 @@ robot_functions_list = [
         'type': 'function',
         'function': {
             'name': 'provide_answer',
-            'description': 'Delivers an answer to question',
+            'description': 'Provides answers and responses to the user\'s queries.',
             'parameters': {
                 'type': 'object',
                 'properties': {
@@ -92,7 +92,25 @@ robot_functions_list = [
                 'required': ['answer']
             }
         }
+    },
+    {
+    'type': 'function',
+    'function': {
+        'name': 'execute_motion',
+        'description': 'Executes a predefined motion sequence for the robot.',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'motion_name': {
+                    'type': 'string',
+                    'description': 'The name of the predefined motion to execute.'
+                }
+            },
+            'required': ['motion_name']
+        }
     }
+    }
+    
 ]
 
 
