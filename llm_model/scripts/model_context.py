@@ -32,9 +32,10 @@ class ModelContext:
         prompt += "\n\nRoom Information:\n"
         for room, details in self.environment_data["rooms"].items():
             coordinates = details["coordinates"]
+            yaw = details["yaw"]
             items = ", ".join(details["items"])
-            prompt += f"- {room.capitalize()} at coordinates {coordinates}, containing items: {items}.\n"
-
+            prompt += f"- {room.capitalize()} at coordinates {coordinates}, yaw: {yaw}, containing items: {items}.\n"
+    
         return prompt
     
     def create_tools(self):
