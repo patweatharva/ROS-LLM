@@ -1,16 +1,43 @@
 {
     "rooms": {
       "kitchen": {
-        "coordinates": [2, 3],
+        "coordinates": [6.2249, -3.466],
+        "yaw": -0.6095305 ,
         "items": ["apple", "banana", "coffee_mug"]
       },
       "living_room": {
-        "coordinates": [5, 2],
+        "coordinates": [0.4326,  -0.7016],
+        "yaw": -1.4622655,
         "items": ["remote_control", "book"]
       },
       "bedroom": {
-        "coordinates": [8, 1],
+        "coordinates": [-5.148, -0.086],
+        "yaw": 2.5534487,
         "items": ["pillow", "blanket"]
       }
-    }
+    },
+    "motions": {
+    "list": [
+    "close",
+    "close_half",
+    "do_weights",
+    "gun_hand",
+    "head_tour",
+    "home",
+    "inspect_surroundings",
+    "offer",
+    "open",
+    "pick_from_floor",
+    "pinch_hand",
+    "point",
+    "pregrasp_weight",
+    "prepare_grasp",
+    "reach_floor",
+    "reach_max",
+    "shake_hands",
+    "thumb_up_hand",
+    "unfold_arm",
+    "wave"
+  ]
+  }
   }

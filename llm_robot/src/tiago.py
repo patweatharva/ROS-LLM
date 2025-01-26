@@ -6,9 +6,12 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Pose, PoseStamped
 from geometry_msgs.msg import Twist
 from llm_interfaces.srv import ChatGPTs, ChatGPTsResponse
+from move_base_msgs.msg import MoveBaseActionResult
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from actionlib import SimpleActionClient, GoalStatus
 import json
+import threading
+
 
 # Global Initialization
 from llm_config.user_config import UserConfig
@@ -22,12 +25,16 @@ class TiagoRobot:
     def __init__(self):
         self.cmd_vel_pub = rospy.Publisher("/mobile_base_controller/cmd_vel", Twist, queue_size=10)
         self.go_to_point = rospy.Publisher("/move_base_simple/goal", PoseStamped, queue_size=10)
+        self.go_to_point_result = rospy.Subscriber("/move_base/result", MoveBaseActionResult, self.goal_status_callback)
         self.client = SimpleActionClient('/play_motion', PlayMotionAction)
-        # rospy.loginfo("Waiting for Action Server...")
-        # self.client.wait_for_server()
-
+        rospy.loginfo("Waiting for Action Server...")
+        self.client.wait_for_server()
+        
+        self.instructions = []
+        self.lock = threading.Lock()
         # Server for model function call
         self.function_call_server = rospy.Service("/ChatGPT_function_call_service", ChatGPTs, self.function_call_callback)
+        self.ratee = rospy.Timer(rospy.Duration(1), self.sequence_looping)
 
 
     def function_call_callback(self, req):
@@ -41,35 +48,67 @@ class TiagoRobot:
             response = ChatGPTsResponse()
             response.response_text = f"Invalid JSON format: {e}"
             return response
-
-        # Process each function call dynamically
-        response_texts = []
-        for function_name, args_list in req_data.items():
-            try:
-                # Check if the function exists in the class
-                if hasattr(self, function_name):
-                    func_obj = getattr(self, function_name)
-
-                    for args in args_list:
-                        if isinstance(args, dict):
-                            # Call the function with unpacked arguments
-                            result = func_obj(**args)
-                            response_texts.append(f"{function_name} executed: {result}")
-                        else:
-                            rospy.logerr(f"Invalid arguments for {function_name}: {args}")
-                            response_texts.append(f"Invalid arguments for {function_name}")
-                else:
-                    rospy.logerr(f"Function {function_name} not found.")
-                    response_texts.append(f"Function {function_name} not found.")
-
-            except Exception as error:
-                rospy.logerr(f"Error calling {function_name}: {error}")
-                response_texts.append(f"Error calling {function_name}: {error}")
+        
+        with self.lock:  # Acquire lock
+            self.instructions = self.sort_instructions(req_data)
 
         response = ChatGPTsResponse()
-        response.response_text = " | ".join(response_texts)
+        response.response_text = "Functions have been received"
         return response
+    
+    def sequence_looping(self, event):
+        with self.lock:
+            if not hasattr(self, "instructions") or not self.instructions:
+                rospy.loginfo("No instructions to process.")
+                return
 
+            if hasattr(self, "goal_status") and self.goal_status != GoalStatus.SUCCEEDED:
+                rospy.loginfo("Waiting for current function to complete...")
+                return
+
+            # Get the next instruction
+            next_instruction = self.instructions.pop(0)
+
+        function_name = next_instruction.get("type")
+        args = next_instruction
+
+        # Remove unnecessary keys
+        args.pop("type", None)
+        args.pop("sequence_index", None)
+
+        if hasattr(self, function_name):
+            func_obj = getattr(self, function_name)
+
+            try:
+                rospy.loginfo(f"Executing {function_name} with args: {args}")
+                func_obj(**args)
+                rospy.loginfo(f"{function_name} execution started.")
+            except TypeError as e:
+                rospy.logerr(f"Error calling {function_name}: {e}")
+            except Exception as e:
+                rospy.logerr(f"Unexpected error in {function_name}: {e}")
+        else:
+            rospy.logerr(f"Function {function_name} not found.")
+
+    # Sort function
+    def sort_instructions(self, data):
+        # Mapping of keys to instruction types
+
+        # Flatten and transform data with type labels
+        instructions = []
+        for key, items in data.items():
+            for item in items:
+                item["type"] = key  # Add type field
+                instructions.append(item)
+
+        # Sort the list by sequence_index
+        instructions.sort(key=lambda i: i["sequence_index"])
+
+        return instructions
+
+
+    def goal_status_callback(self, msg):
+        self.goal_status = msg.status.status
 
     def publish_cmd_vel(self, **kwargs):
         """
@@ -91,6 +130,7 @@ class TiagoRobot:
         twist_msg.angular.z = float(angular_z)
 
         self.cmd_vel_pub.publish(twist_msg)
+        self.goal_status = GoalStatus.SUCCEEDED
         rospy.loginfo(f"Publishing cmd_vel message successfully: {twist_msg}")
         return twist_msg
     
@@ -122,6 +162,7 @@ class TiagoRobot:
         pose.pose.orientation.w = quaternion[3]
 
         self.go_to_point.publish(pose)
+        self.goal_status = GoalStatus.ACTIVE
         rospy.loginfo(f"Publishing goal pose: {pose}")
         return pose
     
@@ -132,13 +173,13 @@ class TiagoRobot:
         pass
 
 
-    def motion(self, **kwargs):
+    def execute_motion(self, **kwargs):
         """
         Plays predefined motions
         """
 
         goal = PlayMotionGoal()
-        goal.motion_name = kwargs.get("name", "home")
+        goal.motion_name = kwargs.get("motion_name", "home")
         goal.skip_planning = False
         goal.priority = 0  # Optional
 
@@ -151,9 +192,22 @@ class TiagoRobot:
         state = self.client.get_state()
 
         if action_ok:
+            self.goal_status =  GoalStatus.SUCCEEDED
             rospy.loginfo("Action finished succesfully with state: " + str(get_status_string(state)))
         else:
+            self.goal_status =  GoalStatus.ABORTED
             rospy.logwarn("Action failed with state: " + str(get_status_string(state)))
+
+        goal = PlayMotionGoal()
+        goal.motion_name = "home"
+        goal.skip_planning = False
+        goal.priority = 0  # Optional
+
+        rospy.loginfo("Sending goal with motion: " + goal.motion_name)
+        self.client.send_goal(goal)
+
+        rospy.loginfo("Waiting for result...")
+        action_ok = self.client.wait_for_result(rospy.Duration(30.0))
     
 
 

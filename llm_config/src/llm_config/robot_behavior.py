@@ -138,6 +138,27 @@ robot_functions_list = [
             },
         },
     },
+    {
+        'type': 'function',
+        'function': {
+            'name': 'execute_motion',
+            'description': 'Executes a predefined motion sequence for the robot.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    "sequence_index": {
+                        'type': 'number',
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
+                    },
+                    'motion_name': {
+                        'type': 'string',
+                        'description': 'The name of the predefined motion to execute.'
+                    }
+                },
+                'required': ["sequence_index", 'motion_name']
+            }
+        }
+    },
 ]
 
 
