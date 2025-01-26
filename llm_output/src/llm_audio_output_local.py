@@ -8,6 +8,7 @@ from pydub.playback import play
 import os
 import rospkg
 import json
+import threading
 
 
 # Get the package path dynamically using rospkg
@@ -55,9 +56,10 @@ class ElevenLabsTTSNode:
             "/llm_state", String, queue_size=10
         )
 
+        self.lock = threading.Lock()
 
         # Subscribe to the text input topic
-        rospy.Subscriber('/llm_feedback_to_user', String, self.text_callback)
+        rospy.Subscriber('/llm_feedback_to_user', String, self.text_callback, queue_size=10)
         # Initialization ready
         self.publish_string("output ready", self.initialization_publisher)
     
@@ -82,20 +84,30 @@ class ElevenLabsTTSNode:
             return ""
         except json.JSONDecodeError:
             return ""
+    
+    def is_json(self, message):
+        try:
+            json.loads(message)
+            return True  # It's a valid JSON
+        except ValueError:
+            return False  # Not a JSON
+        
 
     def text_callback(self, msg):
+        with self.lock:
 
-        text = self.extract_response(str(msg.data))
+            text = msg.data
+            if self.is_json(text):
+                text = self.extract_response(str(text))
+            rospy.loginfo(f"Received text: {text}")
 
-        rospy.loginfo(f"Received text: {text}")
+            # Call Eleven Labs API to generate speech
+            audio_data = self.generate_speech(text)
 
-        # Call Eleven Labs API to generate speech
-        audio_data = self.generate_speech(text)
-
-        if audio_data:
-            self.play_audio(audio_data)
-        else:
-            rospy.logerr("Failed to generate speech audio.")
+            if audio_data:
+                self.play_audio(audio_data)
+            else:
+                rospy.logerr("Failed to generate speech audio.")
 
     def generate_speech(self, text):
         """Send text to Eleven Labs API and receive audio data."""
