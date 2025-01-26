@@ -35,10 +35,6 @@ class ModelContext:
             yaw = details["yaw"]
             items = ", ".join(details["items"])
             prompt += f"- {room.capitalize()} at coordinates {coordinates}, yaw: {yaw}, containing items: {items}.\n"
-
-        prompt += "\nAvailable motions include:\n"
-        motions_list = self.environment_data["motions"]["list"]
-        prompt += ", ".join(motions_list) + ".\n"
     
         return prompt
     

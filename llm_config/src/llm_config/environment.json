@@ -15,29 +15,5 @@
         "yaw": 2.5534487,
         "items": ["pillow", "blanket"]
       }
-    },
-    "motions": {
-    "list": [
-    "close",
-    "close_half",
-    "do_weights",
-    "gun_hand",
-    "head_tour",
-    "home",
-    "inspect_surroundings",
-    "offer",
-    "open",
-    "pick_from_floor",
-    "pinch_hand",
-    "point",
-    "pregrasp_weight",
-    "prepare_grasp",
-    "reach_floor",
-    "reach_max",
-    "shake_hands",
-    "thumb_up_hand",
-    "unfold_arm",
-    "wave"
-  ]
-  }
+    }
   }

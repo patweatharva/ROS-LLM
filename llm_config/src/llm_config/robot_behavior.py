@@ -96,7 +96,7 @@ robot_functions_list = [
         "type": "function",
         "function": {
             "name": "provide_answer_to_user",
-            "description": "Delivers an answer to question asked by the user, the answer should be in natural language and will be used to answer the user's question in speech output by calling the text to speech function.",
+            "description": "Delivers an answer to question asked by the user, the answer should be in natural language and will be used to answer the user's question in speech output by calling the text to speech function. Please be talkative and answer as many questions as possible in a conversational manner. Please be more talkative.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -142,7 +142,7 @@ robot_functions_list = [
         'type': 'function',
         'function': {
             'name': 'execute_motion',
-            'description': 'Executes a predefined motion sequence for the robot.',
+            'description': 'Executes a predefined motion sequence for the robot. Please state the motion name in the function call. The available motions are: "close", "close_half", "do_weights", "gun_hand", "head_tour", "home", "inspect_surroundings", "offer", "open", "pick_from_floor", "pinch_hand", "point", "pregrasp_weight", "prepare_grasp", "reach_floor", "reach_max", "shake_hands", "thumb_up_hand", "unfold_arm", "wave"',
             'parameters': {
                 'type': 'object',
                 'properties': {
