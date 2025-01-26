@@ -18,10 +18,10 @@
         <arg name="gzpose" value="$(arg gzpose)" />
     </include>
 
-    <node pkg="llm_input" name="llm_audio_input" type="llm_audio_input_local.py" />
-    <node pkg="llm_output" type="llm_audio_output_local.py" name="llm_audio_output"/>
+    <node pkg="llm_input" name="llm_audio_input" type="llm_audio_input_local.py" output="screen"/>
+    <node pkg="llm_output" type="llm_audio_output_local.py" name="llm_audio_output" output="screen"/>
     <node pkg="llm_robot" type="tiago.py" name="tiago"/>
-    <node pkg="llm_model" type="llm_node.py" name="llm_node"/>
+    <node pkg="llm_model" type="llm_node.py" name="llm_node" output="screen"/>
 
 
 </launch>

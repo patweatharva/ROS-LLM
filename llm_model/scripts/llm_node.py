@@ -3,7 +3,7 @@
 
 import rospy
 from std_msgs.msg import String
-from llm_interfaces.srv import ChatGPTs
+from llm_interfaces.srv import ChatGPTs, ChatGPTsRequest
 import json
 import os
 import time
@@ -215,7 +215,7 @@ class LLMNode:
         print(message)
         print("--------------------------------")
         # Create service request
-        request = ChatGPTs()
+        request = ChatGPTsRequest()
         request.request_text = message
         
         try:

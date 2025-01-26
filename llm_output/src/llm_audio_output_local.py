@@ -7,6 +7,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 import os
 import rospkg
+import json
 
 
 # Get the package path dynamically using rospkg
@@ -59,12 +60,37 @@ class ElevenLabsTTSNode:
         rospy.Subscriber('/llm_feedback_to_user', String, self.text_callback)
         # Initialization ready
         self.publish_string("output ready", self.initialization_publisher)
+    
+    def extract_response(self, json_string):
+        """
+        Parses a JSON string to extract and concatenate the question and answer from specific function calls.
+        """
+
+        try:
+            data = json.loads(json_string)
+            keys_to_check = ["provide_answer_to_user", "ask_clarifying_question"]
+
+            for key in keys_to_check:
+                if key in data and data[key]:
+                    response = data[key][0]
+                    question = response.get("question", "") if key == "ask_clarifying_question" else ""
+                    answer = response.get("answer", "") if key == "provide_answer_to_user" else ""
+                    
+                    result = f"{question} {answer}".strip()
+                    return result if result else ""
+
+            return ""
+        except json.JSONDecodeError:
+            return ""
 
     def text_callback(self, msg):
-        rospy.loginfo(f"Received text: {msg.data}")
+
+        text = self.extract_response(str(msg.data))
+
+        rospy.loginfo(f"Received text: {text}")
 
         # Call Eleven Labs API to generate speech
-        audio_data = self.generate_speech(msg.data)
+        audio_data = self.generate_speech(text)
 
         if audio_data:
             self.play_audio(audio_data)
@@ -108,9 +134,9 @@ class ElevenLabsTTSNode:
         audio = AudioSegment.from_file(audio_file_path, format="mp3")
         play(audio)
 
-        rospy.loginfo("Finished Polly playing.")
+        rospy.loginfo("Finished playing.")
         self.publish_string("feedback finished", self.llm_state_publisher)
-        self.publish_string("listening", self.llm_state_publisher)
+        # self.publish_string("listening", self.llm_state_publisher)
 
 
     def run(self):

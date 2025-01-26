@@ -5,9 +5,10 @@ import tf
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose, PoseStamped
 from geometry_msgs.msg import Twist
-from llm_interfaces.srv import ChatGPTs
+from llm_interfaces.srv import ChatGPTs, ChatGPTsResponse
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from actionlib import SimpleActionClient, GoalStatus
+import json
 
 # Global Initialization
 from llm_config.user_config import UserConfig
@@ -22,12 +23,53 @@ class TiagoRobot:
         self.cmd_vel_pub = rospy.Publisher("/mobile_base_controller/cmd_vel", Twist, queue_size=10)
         self.go_to_point = rospy.Publisher("/move_base_simple/goal", PoseStamped, queue_size=10)
         self.client = SimpleActionClient('/play_motion', PlayMotionAction)
-        rospy.loginfo("Waiting for Action Server...")
-        self.client.wait_for_server()
+        # rospy.loginfo("Waiting for Action Server...")
+        # self.client.wait_for_server()
+
+        # Server for model function call
+        self.function_call_server = rospy.Service("/ChatGPT_function_call_service", ChatGPTs, self.function_call_callback)
 
 
-    def plan(self, **kwargs):
-        pass
+    def function_call_callback(self, req):
+        print(f"Received request: {req.request_text}")
+
+        # Parse the request text safely
+        try:
+            req_data = json.loads(req.request_text)
+        except json.JSONDecodeError as e:
+            rospy.logerr(f"Failed to parse JSON: {e}")
+            response = ChatGPTsResponse()
+            response.response_text = f"Invalid JSON format: {e}"
+            return response
+
+        # Process each function call dynamically
+        response_texts = []
+        for function_name, args_list in req_data.items():
+            try:
+                # Check if the function exists in the class
+                if hasattr(self, function_name):
+                    func_obj = getattr(self, function_name)
+
+                    for args in args_list:
+                        if isinstance(args, dict):
+                            # Call the function with unpacked arguments
+                            result = func_obj(**args)
+                            response_texts.append(f"{function_name} executed: {result}")
+                        else:
+                            rospy.logerr(f"Invalid arguments for {function_name}: {args}")
+                            response_texts.append(f"Invalid arguments for {function_name}")
+                else:
+                    rospy.logerr(f"Function {function_name} not found.")
+                    response_texts.append(f"Function {function_name} not found.")
+
+            except Exception as error:
+                rospy.logerr(f"Error calling {function_name}: {error}")
+                response_texts.append(f"Error calling {function_name}: {error}")
+
+        response = ChatGPTsResponse()
+        response.response_text = " | ".join(response_texts)
+        return response
+
 
     def publish_cmd_vel(self, **kwargs):
         """
@@ -49,7 +91,7 @@ class TiagoRobot:
         twist_msg.angular.z = float(angular_z)
 
         self.cmd_vel_pub.publish(twist_msg)
-        self.get_logger().info(f"Publishing cmd_vel message successfully: {twist_msg}")
+        rospy.loginfo(f"Publishing cmd_vel message successfully: {twist_msg}")
         return twist_msg
     
     def publish_goal_pose(self, **kwargs):
