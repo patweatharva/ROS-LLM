@@ -102,6 +102,7 @@ class AudioInput:
         
         # Step 6: Wait until the conversion is complete
         rospy.loginfo("Local Converting...")
+        self.publish_string("done listening", self.llm_state_publisher)
 
         # Step 7: Get the transcribed text
         whisper_result = self.whisper_model.transcribe(

@@ -55,13 +55,17 @@ robot_functions_list = [
         "type": "function",
         "function": {
             "name": "publish_goal_pose",
-            "description": "Publishes a target pose to move the robot to a specific position and orientation in 3D space. The target pose is in meters and radians. Only when the user asks the robot to move to a specific location, the robot should use this function to move.",
+            "description": "Publishes a target pose to move the robot to a specific position and orientation in 3D space. The target pose is in meters and radians. Only when the user asks the robot to move to a specific location, the robot should use this function to move. Only execute this function call when it is absolutely necessary, such as fetching objects or going to rooms",
             "parameters": {
                 "type": "object",
                 "properties": {
                     'sequence_index': {
                         'type': 'number',
                         'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
+                    },
+                    'feedback_to_user': {
+                        'type': 'string',
+                        'description': 'If this function call is executed, provide here a feedback that should be given to the user. For example, if according to a user\'s request, you decide to execute this tool call for argument "kitchen", then put here "I\'m going to the kitchen" '
                     },
                     "x": {
                         "type": "number",
@@ -88,7 +92,7 @@ robot_functions_list = [
                         "description": "The yaw angle (rotation around z-axis) in radians.",
                     },
                 },
-                "required": ["sequence_index", "x", "y", "z", "roll", "pitch", "yaw"],
+                "required": ["sequence_index", "feedback_to_user", "x", "y", "z", "roll", "pitch", "yaw"],
             },
         },
     },

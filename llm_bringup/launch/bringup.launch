@@ -6,12 +6,14 @@
     <arg name="public_sim" default="true" />
     <arg name="lost" default="false" />
     <arg name="map" default="$(env HOME)/.pal/tiago_dual_maps/configurations/small_house" />
-    <arg name="world" default="small_house" />
+    <arg name="world" default="small_house_test" />
     <arg name="gzpose" default="-x 1.0  -y   0.0 -z  0.0   -R 0.0 -P 0.0 -Y  0.0"/>
+    <arg name="end_effector" default="pal-gripper"/>
 
     <!-- Include the Tiago Dual Gazebo world launch -->
     <include file="$(find tiago_2dnav_gazebo)/launch/tiago_navigation.launch">
         <arg name="public_sim" value="$(arg public_sim)" />
+        <arg name="end_effector"      value="$(arg end_effector)"/>
         <arg name="lost" value="$(arg lost)" />
         <arg name="map" value="$(arg map)" />
         <arg name="world" value="$(arg world)" />
@@ -19,6 +21,7 @@
     </include>
 
     <node pkg="llm_input" name="llm_audio_input" type="llm_audio_input_local.py" output="screen"/>
+    <node pkg="llm_robot" name="tiago_gui" type="tiago_gui.py" output="screen"/>
     <node pkg="llm_output" type="llm_audio_output_local.py" name="llm_audio_output" output="screen"/>
     <node pkg="llm_robot" type="tiago.py" name="tiago" output="screen"/>
     <node pkg="llm_model" type="llm_node.py" name="llm_node" output="screen"/>

@@ -27,20 +27,27 @@ class TiagoRobot:
         self.go_to_point = rospy.Publisher("/move_base_simple/goal", PoseStamped, queue_size=10)
         self.go_to_point_result = rospy.Subscriber("/move_base/result", MoveBaseActionResult, self.goal_status_callback)
         self.client = SimpleActionClient('/play_motion', PlayMotionAction)
+        self.feedback_pub = rospy.Publisher("llm_feedback", String, queue_size=10)
         rospy.loginfo("Waiting for Action Server...")
         self.client.wait_for_server()
-        
+
+        self.goal_status = GoalStatus.SUCCEEDED
+
         self.instructions = []
         self.lock = threading.Lock()
-        # Server for model function call
+        self.current_function = None
         self.function_call_server = rospy.Service("/ChatGPT_function_call_service", ChatGPTs, self.function_call_callback)
-        self.ratee = rospy.Timer(rospy.Duration(1), self.sequence_looping)
+        self.rate = rospy.Timer(rospy.Duration(1), self.sequence_looping)
 
+    def publish_status(self, function_name, status):
+        feedback = json.dumps({
+            "function": function_name,
+            "status": status
+        })
+        self.feedback_pub.publish(feedback)
 
     def function_call_callback(self, req):
         print(f"Received request: {req.request_text}")
-
-        # Parse the request text safely
         try:
             req_data = json.loads(req.request_text)
         except json.JSONDecodeError as e:
@@ -48,8 +55,8 @@ class TiagoRobot:
             response = ChatGPTsResponse()
             response.response_text = f"Invalid JSON format: {e}"
             return response
-        
-        with self.lock:  # Acquire lock
+
+        with self.lock:
             self.instructions = self.sort_instructions(req_data)
 
         response = ChatGPTsResponse()
@@ -57,22 +64,33 @@ class TiagoRobot:
         return response
     
     def sequence_looping(self, event):
+        if hasattr(self, "goal_status") and self.current_function is not None:
+            if self.goal_status == GoalStatus.ABORTED:
+                rospy.loginfo("Function execution aborted.")
+                self.publish_status(self.current_function, "failed")
+                self.current_function = None
+                return
+            elif self.goal_status == GoalStatus.SUCCEEDED:
+                rospy.loginfo("Function executed successfully.")
+                self.publish_status(self.current_function, "succeeded")
+                self.current_function = None
+            else:
+                rospy.loginfo("Waiting for current function to complete...")
+                self.publish_status(self.current_function, "ongoing")
+                return
+        
         with self.lock:
             if not hasattr(self, "instructions") or not self.instructions:
                 rospy.loginfo("No instructions to process.")
                 return
 
-            if hasattr(self, "goal_status") and self.goal_status != GoalStatus.SUCCEEDED:
-                rospy.loginfo("Waiting for current function to complete...")
-                return
 
             # Get the next instruction
             next_instruction = self.instructions.pop(0)
 
         function_name = next_instruction.get("type")
+        self.current_function = function_name
         args = next_instruction
-
-        # Remove unnecessary keys
         args.pop("type", None)
         args.pop("sequence_index", None)
 
@@ -80,15 +98,20 @@ class TiagoRobot:
             func_obj = getattr(self, function_name)
 
             try:
+                self.publish_status(function_name, "in_progress")
                 rospy.loginfo(f"Executing {function_name} with args: {args}")
                 func_obj(**args)
                 rospy.loginfo(f"{function_name} execution started.")
+                self.publish_status(function_name, "succeeded")
             except TypeError as e:
                 rospy.logerr(f"Error calling {function_name}: {e}")
+                self.publish_status(function_name, "failed")
             except Exception as e:
                 rospy.logerr(f"Unexpected error in {function_name}: {e}")
+                self.publish_status(function_name, "failed")
         else:
             rospy.logerr(f"Function {function_name} not found.")
+            self.publish_status(function_name, "failed")
 
     # Sort function
     def sort_instructions(self, data):

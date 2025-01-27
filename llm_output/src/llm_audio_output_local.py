@@ -20,7 +20,7 @@ API_KEY_FILE = os.path.join(package_path, 'config', '.elevenlabs_api_key')
 
 
 # Replace with your preferred Eleven Labs voice ID
-VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Change to the desired voice ID
+VOICE_ID = "iP95p4xoKVk53GoZ742B"  # Change to the desired voice ID
 
 
 def read_api_key(file_path):
