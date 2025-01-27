@@ -28,6 +28,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from actionlib import SimpleActionClient
 import actionlib
+from std_msgs.msg import String
 
 import tf2_ros
 from tf2_geometry_msgs import do_transform_pose
@@ -49,17 +50,30 @@ class SphericalService(object):
 	def __init__(self):
 		rospy.loginfo("Starting Spherical Grab Service")
 		self.pick_type = PickAruco()
+		self.status = "IDLE"
 		rospy.loginfo("Finished SphericalService constructor")
 		self.place_gui = rospy.Service("/place_gui", Empty, self.start_aruco_place)
 		self.pick_gui = rospy.Service("/pick_gui", Empty, self.start_aruco_pick)
+		self.status_pub = rospy.Publisher('/pick_place_status', String, queue_size=10)
+
+		# Define timer to call `timer_callback` every second
+		self.status_timer = rospy.Timer(rospy.Duration(0.5), self.timer_callback)
 
 	def start_aruco_pick(self, req):
+		self.status = "PICKING"
 		self.pick_type.pick_aruco()
+		self.status = "IDLE"
 		return {}
 
 	def start_aruco_place(self, req):
+		self.status = "PLACING"
 		self.pick_type.place_aruco()
+		self.status = "IDLE"
 		return {}
+	
+	def timer_callback(self, event):
+		# This function is called at the specified timer interval
+		self.status_pub.publish(self.status)
 
 class PickAruco(object):
 	def __init__(self):
@@ -187,10 +201,12 @@ class PickAruco(object):
 		rospy.loginfo("Setting cube pose based on ArUco detection")
 		place_g.object_pose.pose.position = aruco_ps.pose.position
 		place_g.object_pose.pose.position.z -= 0.1*(1.0/2.0)
+		# place_g.object_pose.pose.position.z -= 0.1*(1.0/2.0)
 		rospy.loginfo("aruco pose in base_footprint:" + str(place_g))
 
 		place_g.object_pose.header.frame_id = 'base_footprint'
 		place_g.object_pose.pose.orientation.w = 1.0
+		self.detected_pose_pub.publish(place_g.object_pose)
 		rospy.loginfo("Gonna place:" + str(place_g))
 
 		rospy.loginfo("Done!")
@@ -220,6 +236,8 @@ class PickAruco(object):
 
 		self.upper_head()
 		rospy.sleep(2.0)
+
+		self.task_status.publish()
 
 	def lower_head(self):
 		rospy.loginfo("Moving head down")
