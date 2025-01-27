@@ -210,7 +210,7 @@ class PickAndPlaceServer(object):
 
 		# compute grasps
 		possible_grasps = self.sg.create_grasps_from_object_pose(object_pose)
-		self.pickup_ac
+
 		goal = createPickupGoal(
 			"arm_torso", "part", object_pose, possible_grasps, self.links_to_allow_contact)
 
@@ -227,14 +227,38 @@ class PickAndPlaceServer(object):
 		return result.error_code.val
 
 	def place_object(self, object_pose):
+		
+		# rospy.loginfo("Removing any previous 'part' object")
+		# self.scene.remove_attached_object("arm_tool_link")
+		# self.scene.remove_world_object("part")
+		self.scene.remove_world_object("table")
+
 		rospy.loginfo("Clearing octomap")
 		self.clear_octomap_srv.call(EmptyRequest())
+
+		table_pose = copy.deepcopy(object_pose)
+
+		# #define a virtual table below the object
+		table_height = object_pose.pose.position.z - 0.1 + self.object_height/2 + 0.015
+		table_width  = 1.0
+		table_depth  = 1.2
+		table_pose.pose.position.x = 1.1
+		table_pose.pose.position.z = table_height/2
+
+		self.scene.add_box("table", table_pose, (table_depth, table_width, table_height))
+
+		# We need to wait for the object part to appear
+		self.wait_for_planning_scene_object("table")
+
+		object_pose.pose.position.z += 0.07
 		possible_placings = self.sg.create_placings_from_object_pose(
 			object_pose)
 		# Try only with arm
 		rospy.loginfo("Trying to place using only arm")
 		goal = createPlaceGoal(
 			object_pose, possible_placings, "arm", "part", self.links_to_allow_contact)
+		
+
 		rospy.loginfo("Sending goal")
 		self.place_ac.send_goal(goal)
 		rospy.loginfo("Waiting for result")
@@ -261,8 +285,8 @@ class PickAndPlaceServer(object):
 		rospy.loginfo(
 			"Result: " +
 			str(moveit_error_dict[result.error_code.val]))
-		rospy.loginfo("Removing previous 'part' object")
-		self.scene.remove_world_object("part")
+		# rospy.loginfo("Removing previous 'part' object")
+		# self.scene.remove_world_object("part")
 
 		return result.error_code.val
 

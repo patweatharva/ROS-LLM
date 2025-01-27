@@ -187,10 +187,12 @@ class PickAruco(object):
 		rospy.loginfo("Setting cube pose based on ArUco detection")
 		place_g.object_pose.pose.position = aruco_ps.pose.position
 		place_g.object_pose.pose.position.z -= 0.1*(1.0/2.0)
+		# place_g.object_pose.pose.position.z -= 0.1*(1.0/2.0)
 		rospy.loginfo("aruco pose in base_footprint:" + str(place_g))
 
 		place_g.object_pose.header.frame_id = 'base_footprint'
 		place_g.object_pose.pose.orientation.w = 1.0
+		self.detected_pose_pub.publish(place_g.object_pose)
 		rospy.loginfo("Gonna place:" + str(place_g))
 
 		rospy.loginfo("Done!")
