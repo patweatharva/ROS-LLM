@@ -3,17 +3,22 @@
       "kitchen": {
         "coordinates": [6.2249, -3.466],
         "yaw": -0.6095305 ,
-        "items": ["apple", "banana", "coffee_mug"]
+        "items": ["coffee_mug"]
       },
       "living_room": {
         "coordinates": [0.4326,  -0.7016],
         "yaw": -1.4622655,
-        "items": ["remote_control", "book"]
+        "items": []
       },
       "bedroom": {
         "coordinates": [-5.148, -0.086],
         "yaw": 2.5534487,
-        "items": ["pillow", "blanket"]
+        "items": ["book"]
+      },
+      "dining table": {
+        "coordinates": [4.22514, 1.031876],
+        "yaw": -0.0907872,
+        "items": ["banana", "apple"]
       }
     }
   }

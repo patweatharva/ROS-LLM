@@ -2,7 +2,8 @@
 
 import rospy
 import tf
-from std_msgs.msg import String
+from std_msgs.msg import String, Int64
+from std_srvs.srv import Empty
 from geometry_msgs.msg import Pose, PoseStamped
 from geometry_msgs.msg import Twist
 from llm_interfaces.srv import ChatGPTs, ChatGPTsResponse
@@ -11,6 +12,8 @@ from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from actionlib import SimpleActionClient, GoalStatus
 import json
 import threading
+
+ARUCO_IDS = {100: ["apple"], 582: ["banana"], 42: ["book"]}
 
 
 # Global Initialization
@@ -28,8 +31,14 @@ class TiagoRobot:
         self.go_to_point_result = rospy.Subscriber("/move_base/result", MoveBaseActionResult, self.goal_status_callback)
         self.client = SimpleActionClient('/play_motion', PlayMotionAction)
         self.feedback_pub = rospy.Publisher("llm_feedback", String, queue_size=10)
+        self.llm_feedback_to_user_publisher = rospy.Publisher("/llm_feedback_to_user", String, queue_size=1)
         rospy.loginfo("Waiting for Action Server...")
         self.client.wait_for_server()
+
+        self.marker_set = rospy.Publisher("/set_marker", Int64, queue_size=10)
+        self.pick_gui_service = rospy.ServiceProxy("/pick_gui", Empty)
+        self.place_gui_service = rospy.ServiceProxy("/place_gui", Empty)
+        self.pick_place_feedback = rospy.Subscriber("/pick_place_status", String, self.pick_place_status_callback)
 
         self.goal_status = GoalStatus.SUCCEEDED
 
@@ -38,6 +47,23 @@ class TiagoRobot:
         self.current_function = None
         self.function_call_server = rospy.Service("/ChatGPT_function_call_service", ChatGPTs, self.function_call_callback)
         self.rate = rospy.Timer(rospy.Duration(1), self.sequence_looping)
+        self.last_pick_place_status = None
+    
+    def pick_place_status_callback(self, msg):
+        
+        if msg.data == "IDLE" and (self.last_pick_place_status == "PICKING" or self.last_pick_place_status == "PLACING"):
+            
+            if self.last_pick_place_status == "PICKING":
+                feedback = "I succeeded in picking the object"
+            else:
+                feedback = "I failed in placing the object"
+
+            self.publish_string(feedback, self.llm_feedback_to_user_publisher)
+            self.goal_status = GoalStatus.SUCCEEDED
+        # HOW TO KNOW WHEN IT FAILED???
+
+        self.last_pick_place_status = msg.data
+
 
     def publish_status(self, function_name, status):
         feedback = json.dumps({
@@ -66,13 +92,17 @@ class TiagoRobot:
     def sequence_looping(self, event):
         if hasattr(self, "goal_status") and self.current_function is not None:
             if self.goal_status == GoalStatus.ABORTED:
-                rospy.loginfo("Function execution aborted.")
+                feedback = self.current_function + " execution failed"
+                rospy.loginfo(feedback)
                 self.publish_status(self.current_function, "failed")
+                # self.publish_string(feedback, self.llm_feedback_to_user_publisher)
                 self.current_function = None
                 return
             elif self.goal_status == GoalStatus.SUCCEEDED:
-                rospy.loginfo("Function executed successfully.")
+                feedback = self.current_function + " executed successfully"
+                rospy.loginfo(feedback)
                 self.publish_status(self.current_function, "succeeded")
+                # self.publish_string(feedback, self.llm_feedback_to_user_publisher)
                 self.current_function = None
             else:
                 rospy.loginfo("Waiting for current function to complete...")
@@ -133,6 +163,14 @@ class TiagoRobot:
     def goal_status_callback(self, msg):
         self.goal_status = msg.status.status
 
+        if self.goal_status == GoalStatus.ABORTED:
+            feedback = "I failed to move to the specified location."
+            self.publish_string(feedback, self.llm_feedback_to_user_publisher)
+        elif self.goal_status == GoalStatus.SUCCEEDED:
+            feedback = "I have arrived at the specified location."
+            self.publish_string(feedback, self.llm_feedback_to_user_publisher)
+
+
     def publish_cmd_vel(self, **kwargs):
         """
         Publishes cmd_vel message to control the movement of Tiago
@@ -165,6 +203,7 @@ class TiagoRobot:
         x_value = kwargs.get("x", 0.2)
         y_value = kwargs.get("y", 0.2)
         z_value = kwargs.get("z", 0.2)
+        feedback = kwargs.get("feedback_to_user", "")
 
         roll_value = kwargs.get("roll", 0.2)
         pitch_value = kwargs.get("pitch", 0.2)
@@ -185,9 +224,16 @@ class TiagoRobot:
         pose.pose.orientation.w = quaternion[3]
 
         self.go_to_point.publish(pose)
+        self.publish_string(str(feedback), self.llm_feedback_to_user_publisher)
         self.goal_status = GoalStatus.ACTIVE
         rospy.loginfo(f"Publishing goal pose: {pose}")
         return pose
+    
+    def publish_string(self, string_to_send, publisher_to_use):
+        msg = String()
+        msg.data = string_to_send
+        publisher_to_use.publish(msg)
+        rospy.loginfo(f"Topic: {publisher_to_use.name} Message published: {msg.data}")
     
     def provide_answer(self, **kwargs):
         """
@@ -205,6 +251,7 @@ class TiagoRobot:
         goal.motion_name = kwargs.get("motion_name", "home")
         goal.skip_planning = False
         goal.priority = 0  # Optional
+        feedback = kwargs.get("feedback_to_user", "")
 
         rospy.loginfo("Sending goal with motion: " + goal.motion_name)
         self.client.send_goal(goal)
@@ -227,10 +274,51 @@ class TiagoRobot:
         goal.priority = 0  # Optional
 
         rospy.loginfo("Sending goal with motion: " + goal.motion_name)
+        self.publish_string(str(feedback), self.llm_feedback_to_user_publisher)
         self.client.send_goal(goal)
 
         rospy.loginfo("Waiting for result...")
         action_ok = self.client.wait_for_result(rospy.Duration(30.0))
+    
+
+    def pick_object(self, **kwargs):
+        object_name = kwargs.get("object_name", 0.0)
+        object_id = None
+        feedback = kwargs.get("feedback_to_user", "")
+
+        for id, num in ARUCO_IDS.items():
+            if object_name in num:
+                object_id = id
+
+        if object_id is not None:
+            rospy.loginfo(f"Aruco ID is {object_id}")
+            x = Int64()
+            x.data = object_id
+            self.marker_set.publish(x)
+        
+        rospy.loginfo(f"Picking up {object_name}")
+        self.publish_string(str(feedback), self.llm_feedback_to_user_publisher)
+        self.pick_gui_service.call()
+        self.goal_status = GoalStatus.ACTIVE
+
+
+    def place_object(self, **kwargs):
+        object_name = kwargs.get("object_name", 0.0)
+        object_id = None
+        feedback = kwargs.get("feedback_to_user", "")
+
+        for id, num in ARUCO_IDS.items():
+            if object_name in num:
+                object_id = id
+
+        if object_id is not None:
+            x = Int64()
+            x.data = object_id
+            self.marker_set.publish(x)
+        
+        self.publish_string(str(feedback), self.llm_feedback_to_user_publisher)
+        self.place_gui_service.call()
+        self.goal_status = GoalStatus.ACTIVE
     
 
 

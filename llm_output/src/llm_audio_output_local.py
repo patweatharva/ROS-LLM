@@ -102,7 +102,8 @@ class ElevenLabsTTSNode:
             rospy.loginfo(f"Received text: {text}")
 
             # Call Eleven Labs API to generate speech
-            audio_data = self.generate_speech(text)
+            if text:
+                audio_data = self.generate_speech(text)
 
             if audio_data:
                 self.play_audio(audio_data)

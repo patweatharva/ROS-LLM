@@ -29,8 +29,8 @@
   <!-- Node exposing service to start looking for the object and trigger the picking -->
   <node name="pick_client" pkg="llm_robot" type="pick_client.py" output="screen"/>  
 
-  <group if="$(arg rviz)">
+  <!-- <group if="$(arg rviz)">
       <node name="pick_demo_rviz" pkg="rviz" type="rviz" args="-d $(find llm_robot)/config/rviz/tiago_pick_demo.rviz" />
-  </group>
+  </group> -->
 
 </launch>

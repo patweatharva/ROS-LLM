@@ -14,6 +14,10 @@ robot_functions_list = [
                         'type': 'number',
                         'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
+                    'feedback_to_user': {
+                        'type': 'string',
+                        'description': 'If this function call is executed, provide here a feedback that should be given to the user.'
+                    },
                     "linear_x": {
                         "type": "number",
                         "description": "Linear velocity along the x-axis.",
@@ -41,6 +45,7 @@ robot_functions_list = [
                 },
                 "required": [
                     "sequence_index",
+                    "feedback_to_user",
                     "linear_x",
                     "linear_y",
                     "linear_z",
@@ -154,15 +159,69 @@ robot_functions_list = [
                         'type': 'number',
                         'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
+                    'feedback_to_user': {
+                        'type': 'string',
+                        'description': 'If this function call is executed, provide here a feedback that should be given to the user.'
+                    },
                     'motion_name': {
                         'type': 'string',
                         'description': 'The name of the predefined motion to execute.'
                     }
                 },
-                'required': ["sequence_index", 'motion_name']
+                'required': ["sequence_index", "feedback_to_user", 'motion_name']
             }
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "pick_object",
+            "description": "Picks up a specified object. The robot must be in that location where the object is before picking. This means that you will need to move to the room where it will be picking, before calling this tool call. The function requires the name of the object to be picked.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sequence_index": {
+                        "type": "number",
+                        "description": "The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user's request."
+                    },
+                    "feedback_to_user": {
+                        "type": "string",
+                        "description": "A message to provide feedback to the user about the action being performed."
+                    },
+                    "object_name": {
+                        "type": "string",
+                        "description": "The name of the object to be picked."
+                    }
+                },
+                "required": ["sequence_index", "feedback_to_user", "object_name"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "place_object",
+            "description": "Places a specified object at a designated location. The robot must be in that location where the object is before placing. This means that you will need to move to the room where it will be placed, before calling this tool call. The function requires the name of the object to be placed.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sequence_index": {
+                        "type": "number",
+                        "description": "The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user's request."
+                    },
+                    "feedback_to_user": {
+                        "type": "string",
+                        "description": "A message to provide feedback to the user about the action being performed."
+                    },
+                    "object_name": {
+                        "type": "string",
+                        "description": "The name of the object to be placed."
+                    }
+                },
+                "required": ["sequence_index", "feedback_to_user", "object_name"]
+            }
+        }
+    }
 ]
 
 

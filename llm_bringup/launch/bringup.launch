@@ -5,7 +5,7 @@
     <!-- Arguments -->
     <arg name="public_sim" default="true" />
     <arg name="lost" default="false" />
-    <arg name="map" default="$(env HOME)/.pal/tiago_dual_maps/configurations/small_house" />
+    <arg name="map" default="$(env HOME)/.pal/tiago_maps/configurations/small_house_test" />
     <arg name="world" default="small_house_test" />
     <arg name="gzpose" default="-x 1.0  -y   0.0 -z  0.0   -R 0.0 -P 0.0 -Y  0.0"/>
     <arg name="end_effector" default="pal-gripper"/>
@@ -19,6 +19,8 @@
         <arg name="world" value="$(arg world)" />
         <arg name="gzpose" value="$(arg gzpose)" />
     </include>
+
+    <include file="$(find llm_robot)/launch/pick_place.launch"/>
 
     <node pkg="llm_input" name="llm_audio_input" type="llm_audio_input_local.py" output="screen"/>
     <node pkg="llm_robot" name="tiago_gui" type="tiago_gui.py" output="screen"/>

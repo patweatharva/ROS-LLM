@@ -237,8 +237,6 @@ class PickAruco(object):
 		self.upper_head()
 		rospy.sleep(2.0)
 
-		self.task_status.publish()
-
 	def lower_head(self):
 		rospy.loginfo("Moving head down")
 		jt = JointTrajectory()
