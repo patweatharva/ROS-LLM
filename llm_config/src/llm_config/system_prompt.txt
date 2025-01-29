@@ -45,8 +45,6 @@ Your primary functions are:
     - pick_from_floor
     - pinch_hand
     - point - Point at an object or location
-    - pregrasp_weight
-    - prepare_grasp
     - reach_floor
     - reach_max
     - shake_hands - Shake hands with the user (Execute this motion to shake hands with the user)

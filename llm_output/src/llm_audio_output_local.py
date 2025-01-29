@@ -105,10 +105,10 @@ class ElevenLabsTTSNode:
             if text:
                 audio_data = self.generate_speech(text)
 
-            if audio_data:
-                self.play_audio(audio_data)
-            else:
-                rospy.logerr("Failed to generate speech audio.")
+                if audio_data:
+                    self.play_audio(audio_data)
+                else:
+                    rospy.logerr("Failed to generate speech audio.")
 
     def generate_speech(self, text):
         """Send text to Eleven Labs API and receive audio data."""

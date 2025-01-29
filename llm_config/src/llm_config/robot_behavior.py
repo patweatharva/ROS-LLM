@@ -12,7 +12,7 @@ robot_functions_list = [
                 "properties": {
                     'sequence_index': {
                         'type': 'number',
-                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls in a perticular message. I REPEAT THIS INDEX IS ONLY FOR A SINGLE MESSAGE YOU HAVE TO RESET IT to 0 EVERY TIME YOU GET A NEW MESSAGE or REQUEST. I REPEAT DO NOT CARRY FORWARD THESE INDEXES in the next message. THIS INDEX WILL BE USED TO EXECUTE THE TOOL CALLS IN THE ORDER OF THEIR sequence index. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
                     'feedback_to_user': {
                         'type': 'string',
@@ -66,7 +66,7 @@ robot_functions_list = [
                 "properties": {
                     'sequence_index': {
                         'type': 'number',
-                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls in a perticular message. I REPEAT THIS INDEX IS ONLY FOR A SINGLE MESSAGE YOU HAVE TO RESET IT to 0 EVERY TIME YOU GET A NEW MESSAGE or REQUEST. I REPEAT DO NOT CARRY FORWARD THESE INDEXES in the next message. THIS INDEX WILL BE USED TO EXECUTE THE TOOL CALLS IN THE ORDER OF THEIR sequence index. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
                     'feedback_to_user': {
                         'type': 'string',
@@ -109,9 +109,9 @@ robot_functions_list = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "sequence_index": {
+                    'sequence_index': {
                         'type': 'number',
-                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls in a perticular message. I REPEAT THIS INDEX IS ONLY FOR A SINGLE MESSAGE YOU HAVE TO RESET IT to 0 EVERY TIME YOU GET A NEW MESSAGE or REQUEST. I REPEAT DO NOT CARRY FORWARD THESE INDEXES in the next message. THIS INDEX WILL BE USED TO EXECUTE THE TOOL CALLS IN THE ORDER OF THEIR sequence index. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
                     "question":{
                         "type": "string",
@@ -134,9 +134,9 @@ robot_functions_list = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "sequence_index": {
+                    'sequence_index': {
                         'type': 'number',
-                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls in a perticular message. I REPEAT THIS INDEX IS ONLY FOR A SINGLE MESSAGE YOU HAVE TO RESET IT to 0 EVERY TIME YOU GET A NEW MESSAGE or REQUEST. I REPEAT DO NOT CARRY FORWARD THESE INDEXES in the next message. THIS INDEX WILL BE USED TO EXECUTE THE TOOL CALLS IN THE ORDER OF THEIR sequence index. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
                     "question": {
                         "type": "string",
@@ -151,13 +151,13 @@ robot_functions_list = [
         'type': 'function',
         'function': {
             'name': 'execute_motion',
-            'description': 'Executes a predefined motion sequence for the robot. Please state the motion name in the function call. The available motions are: "close", "close_half", "do_weights", "gun_hand", "head_tour", "home", "inspect_surroundings", "offer", "open", "pick_from_floor", "pinch_hand", "point", "pregrasp_weight", "prepare_grasp", "reach_floor", "reach_max", "shake_hands", "thumb_up_hand", "unfold_arm", "wave"',
+            'description': 'Executes a predefined motion sequence for the robot. Please state the motion name in the function call. The available motions are: "close", "close_half", "do_weights", "gun_hand", "head_tour", "home", "inspect_surroundings", "offer", "open", "pick_from_floor", "pinch_hand", "point", "reach_floor", "reach_max", "shake_hands", "thumb_up_hand", "unfold_arm", "wave"',
             'parameters': {
                 'type': 'object',
                 'properties': {
-                    "sequence_index": {
+                    'sequence_index': {
                         'type': 'number',
-                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls in a perticular message. I REPEAT THIS INDEX IS ONLY FOR A SINGLE MESSAGE YOU HAVE TO RESET IT to 0 EVERY TIME YOU GET A NEW MESSAGE or REQUEST. I REPEAT DO NOT CARRY FORWARD THESE INDEXES in the next message. THIS INDEX WILL BE USED TO EXECUTE THE TOOL CALLS IN THE ORDER OF THEIR sequence index. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
                     'feedback_to_user': {
                         'type': 'string',
@@ -180,9 +180,9 @@ robot_functions_list = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "sequence_index": {
-                        "type": "number",
-                        "description": "The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user's request."
+                    'sequence_index': {
+                        'type': 'number',
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls in a perticular message. I REPEAT THIS INDEX IS ONLY FOR A SINGLE MESSAGE YOU HAVE TO RESET IT to 0 EVERY TIME YOU GET A NEW MESSAGE or REQUEST. I REPEAT DO NOT CARRY FORWARD THESE INDEXES in the next message. THIS INDEX WILL BE USED TO EXECUTE THE TOOL CALLS IN THE ORDER OF THEIR sequence index. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
                     "feedback_to_user": {
                         "type": "string",
@@ -205,9 +205,9 @@ robot_functions_list = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "sequence_index": {
-                        "type": "number",
-                        "description": "The index of the sequence of the tool call. This is used to keep track of the order of the tool calls. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user's request."
+                    'sequence_index': {
+                        'type': 'number',
+                        'description': 'The index of the sequence of the tool call. This is used to keep track of the order of the tool calls in a perticular message. I REPEAT THIS INDEX IS ONLY FOR A SINGLE MESSAGE YOU HAVE TO RESET IT to 0 EVERY TIME YOU GET A NEW MESSAGE or REQUEST. I REPEAT DO NOT CARRY FORWARD THESE INDEXES in the next message. THIS INDEX WILL BE USED TO EXECUTE THE TOOL CALLS IN THE ORDER OF THEIR sequence index. The first tool call should have a sequence index of 0, the second tool call should have a sequence index of 1, and so on. This will be used to determine the execution order of the tool calls based on the user\'s request.'
                     },
                     "feedback_to_user": {
                         "type": "string",

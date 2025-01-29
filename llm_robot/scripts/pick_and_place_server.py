@@ -239,8 +239,8 @@ class PickAndPlaceServer(object):
 		table_pose = copy.deepcopy(object_pose)
 
 		# #define a virtual table below the object
-		table_height = object_pose.pose.position.z - 0.1 + self.object_height/2 + 0.015
-		table_width  = 1.0
+		table_height = object_pose.pose.position.z - 0.12 + self.object_height/2 + 0.015
+		table_width  = 4.0
 		table_depth  = 1.2
 		table_pose.pose.position.x = 1.1
 		table_pose.pose.position.z = table_height/2

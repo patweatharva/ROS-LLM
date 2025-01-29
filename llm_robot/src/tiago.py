@@ -13,7 +13,7 @@ from actionlib import SimpleActionClient, GoalStatus
 import json
 import threading
 
-ARUCO_IDS = {100: ["apple"], 582: ["banana"], 42: ["book"]}
+ARUCO_IDS = {582: ["apple"], 582: ["banana"], 582: ["book"]}
 
 
 # Global Initialization
@@ -54,9 +54,9 @@ class TiagoRobot:
         if msg.data == "IDLE" and (self.last_pick_place_status == "PICKING" or self.last_pick_place_status == "PLACING"):
             
             if self.last_pick_place_status == "PICKING":
-                feedback = "I succeeded in picking the object"
+                feedback = "I succeeded in picking the object."
             else:
-                feedback = "I failed in placing the object"
+                feedback = "I have placed the object."
 
             self.publish_string(feedback, self.llm_feedback_to_user_publisher)
             self.goal_status = GoalStatus.SUCCEEDED

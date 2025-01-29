@@ -21,9 +21,8 @@ class LLMNode:
         self.use_deepseek = True
         
         if self.use_deepseek:
-            self.model = os.getenv("model")
-            self.llm_client = OpenAI( organization=os.getenv("ORGANIZATION_ID"), project=os.getenv("PROJECT_ID"))
-            # self.llm_client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"),base_url=os.getenv("DEEPSEEK_BASE_URL"))
+            self.model = "deepseek-chat"
+            self.llm_client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"),base_url=os.getenv("DEEPSEEK_BASE_URL"))
         else:
             self.model = "tiago:latest"  # You can change this to any model available in Ollama
             self.llm_client = ollama.Client(host="http://localhost:11434")
@@ -83,15 +82,7 @@ class LLMNode:
             "content": content,
         }
         if function_call is not None:
-            if len(function_call) == 1:
-                tool_call = function_call[0]
-                message_element_object["function_call"] = {
-                    "name": tool_call["function"]["name"],
-                    "arguments": tool_call["function"]["arguments"]
-                }
-            else:
-                function_calls_str = json.dumps(function_call)
-                message_element_object["content"] = f"{content}\n Function calls executed in the last message were: {function_calls_str}"
+            message_element_object["function_call"] = function_call
             
         self.chat_history.append(message_element_object)
         rospy.loginfo(f"Chat history updated with {message_element_object}")
@@ -118,7 +109,7 @@ class LLMNode:
                     tool_choice="required",
                     stream=False,
                     parallel_tool_calls=True,
-                    # reasoning_effort="high"
+                    reasoning_effort="high"
                 )
                 return response
             except Exception as e:
