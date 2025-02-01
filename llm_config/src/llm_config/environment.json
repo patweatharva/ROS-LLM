@@ -1,0 +1,24 @@
+{
+    "rooms": {
+      "kitchen": {
+        "coordinates": [6.034, -4.2514],
+        "yaw": -1.6751429 ,
+        "items": ["coffee_mug", "plate"]
+      },
+      "living_room": {
+        "coordinates": [0.88676931,  -0.882173739],
+        "yaw": -1.3948393,
+        "items": []
+      },
+      "bedroom": {
+        "coordinates": [-5.409, 2.231],
+        "yaw": -4.7075476,
+        "items": ["book"]
+      },
+      "dining table": {
+        "coordinates": [4.046823456, 0.7468458658],
+        "yaw": 0.2124354,
+        "items": ["banana", "2 apples", "2 books"]
+      }
+    }
+  }
