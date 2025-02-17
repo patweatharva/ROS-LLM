@@ -1,0 +1,10 @@
+models/
+__pycache__/
+__pycache__
+.vscode
+audio/
+__pycache__/
+.elevenlabs_api_key
+**/__pycache__/
+**/*.pyc
+.env
